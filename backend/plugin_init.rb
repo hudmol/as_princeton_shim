@@ -15,3 +15,8 @@ EAD3Serializer.class_eval do
   end
 end
 # end ANW-1489
+
+# ANW-1495 Add local access restriction type column to bulk import spreadsheet
+require_relative 'lib/bulk_import/bulk_import_mixins'
+require_relative 'lib/bulk_import/notes_handler'
+# end ANW-1495
