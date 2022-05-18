@@ -29,9 +29,9 @@ There is no configuration required for this plugin.
 
 ## Features
 
-ANW-1495: Support for Local Access Restriction Type in spreadsheet importer
-ANW-1489: URIs in EAD exports
-NO  JIRA: Support for Local Access Restriction Type and structured restriction dates in RDE
+- ANW-1495: Support for Local Access Restriction Type in spreadsheet importer
+- ANW-1489: URIs in EAD exports
+- NO  JIRA: Support for Local Access Restriction Type and structured restriction dates in RDE
 
 
 ----
