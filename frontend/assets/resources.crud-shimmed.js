@@ -2164,8 +2164,8 @@ TreeResizer.prototype.toggle_height = function () {
         this.errorHandler = $.noop;
 
         this.initEventHandlers();
-        this.renderRoot(function () {
-            tree_loaded_callback();
+        this.renderRoot(function (rootNode) {
+            tree_loaded_callback(rootNode);
         });
     }
 
@@ -2541,7 +2541,7 @@ TreeResizer.prototype.toggle_height = function () {
                 self.appendWaypoints(row, row.data('uri'), node.waypoints, node.waypoint_size, row.data('level') + 1);
 
                 if (done_callback) {
-                    done_callback();
+                    setTimeout(done_callback, 100);
                 }
             })
             .fail(function () {
@@ -2665,14 +2665,14 @@ TreeResizer.prototype.toggle_height = function () {
 
             rootList.append(row);
             self.appendWaypoints(row, null, rootNode.waypoints, rootNode.waypoint_size, 1);
-
             /* Remove any existing table */
             self.elt.find('div.root').remove();
 
             self.elt.prepend(rootList);
             self.renderer.add_root_columns(row, rootNode);
             if (done_callback) {
-                done_callback();
+                /* Note that this will fire before the waypoint nodes are loaded */
+                done_callback(rootNode);
             }
         });
     };
@@ -12072,9 +12072,37 @@ $(function () {
         var $section = $subform.closest('section.subrecord-form');
         var isRepresentative =
           $(':input[name$="[is_representative]"]', $subform).val() === '1';
+        var local_publish_button = $subform.find('.js-file-version-publish');
+        var local_make_rep_button = $subform.find('.is-representative-toggle');
 
         var eventName =
           'newrepresentative' + object_name.replace(/_/, '') + '.aspace';
+
+        if (local_publish_button.prop('checked') == false) {
+          local_make_rep_button.prop('disabled', true);
+        } else {
+          local_make_rep_button.prop('disabled', false);
+        }
+
+        $subform.find('.js-file-version-publish').click(function (e) {
+          if (
+            $subform.hasClass('is-representative') &&
+            $(this).prop('checked', true)
+          ) {
+            handleRepresentativeChange($subform, false);
+            $(this).prop('checked', false);
+          }
+
+          if ($(this).prop('checked') == false) {
+            local_make_rep_button.prop('disabled', true);
+          } else {
+            local_make_rep_button.prop('disabled', false);
+          }
+        });
+
+        $subform.find('.is-representative-toggle').click(function (e) {
+          local_publish_button.prop('checked', true);
+        });
 
         if (isRepresentative) {
           $subform.addClass('is-representative');
@@ -15477,6 +15505,7 @@ $(function () {
         });
       };
 
+
       var initRestrictionDatesHandler = function (elt = null) {
         if (!elt) {
           elt = $('#rdeTable');
@@ -15511,7 +15540,6 @@ $(function () {
         selects.change(handleUpdate);
         selects.trigger('change');
       }
-
 
 
       var initAutoValidateFeature = function () {
@@ -16836,11 +16864,15 @@ $(function () {
 
   ExtentCalculatorForm.prototype.init_form = function () {
     $('.create-extent-btn').on('click', function (event) {
-      $('[id$=_extents_] .subrecord-form-heading .btn').click();
+      var parent_id = '';
+      if ($('#resource_extents_').length) {
+        parent_id = '#resource_extents_';
+      } else if ($('#accession_extents_').length) {
+        parent_id = '#accession_extents_';
+      }
+      $(parent_id + ' .subrecord-form-heading .btn').click();
 
-      var extent_form = $('[id$=_extents_]')
-        .find('.subrecord-form-fields')
-        .last();
+      var extent_form = $(parent_id).find('.subrecord-form-fields').last();
 
       extent_form.find('[id$=__portion_]').val($('#extent_portion_').val());
       extent_form.find('[id$=__number_]').val($('#extent_number_').val());
